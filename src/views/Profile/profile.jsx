@@ -33,6 +33,10 @@ export default class Profile extends Component{
 				console.log(res.data)
 				this.setState({user: res.data})
 		})
+		axios.get('https://newsapi.org/v2/top-headlines?country=ru&apiKey=40e0c1cc80c248deabe2e06afde4824f')
+			.then((res) =>{
+				console.log(res);
+			})
 	}
 
 	render(){
