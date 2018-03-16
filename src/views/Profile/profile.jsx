@@ -7,44 +7,39 @@ export default class Profile extends Component{
 	constructor(props){
 		super(props);
 		this.state = {
-			name:'',
-			password: '',
-			user: {}
+			user: {},
+			url:'',
 		}
 	}
 	componentWillMount(){
+		const url='http://localhost:5000/api/userInfo/' + this.props.match.params.username;
+		this.setState({url:url});
 		console.log(this.props, 'hello')
 		if(this.props.match.params.username){
-			console.log(this.props);
-			axios.post('http://localhost:5000/api/getUserInfo', {username: this.props.match.params.username})
-				.then((res) => {
-					console.log(res);
-					this.setState({name: res.data.name, password: res.data.pass})
-				})
+			axios.get('http://localhost:5000/api/userInfo/' + this.props.match.params.username)
+			.then((res) => {
+				console.log(res.data)
+				this.setState({user: res.data})
+				console.log(this.state)
+		})
 		}
 		else if(this.props.isAuthenticated){
 			axios.get('http://localhost:5000/api/getAuthorizedUserInfo')
 			.then((res) => {
 				this.setState({name: res.data.name, password: res.data.pass})
+
 			})
 		}
-		axios.get('http://localhost:5000/api/userInfo/' + this.props.match.params.username)
-			.then((res) => {
-				console.log(res.data)
-				this.setState({user: res.data})
-		})
-		axios.get('https://newsapi.org/v2/top-headlines?country=ru&apiKey=40e0c1cc80c248deabe2e06afde4824f')
-			.then((res) =>{
-				console.log(res);
-			})
 	}
 
 	render(){
 		return(
 			<div>
 					hello
-				<InfoField title='username' info={this.state.user.userName} owner={true} url={'http://localhost:5000/api/userInfo/' + this.props.match.params.username} contain='userName'/>
-				<InfoField title='password' info={this.state.user.password} owner={true} url={'http://localhost:5000/api/userInfo/' + this.props.match.params.username} contain='password'/>
+				<InfoField title='username' info={this.state.user.userName} owner={true} url={this.state.url} contain='userName'/>
+				<InfoField title='about' info={this.state.user.about} owner={true} url={this.state.url} contain='about'/>
+				<InfoField title='status' info={this.state.user.status} owner={true} url={this.state.url} contain='status'/>
+
 			</div>
 		)
 	}

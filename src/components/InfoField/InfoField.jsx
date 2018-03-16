@@ -18,6 +18,7 @@ export default class InfoField extends Component{
 	}
 
 	render(){
+		console.log(this.props)
 		return(
 			<li>
 				<h1>{this.props.title}</h1>
