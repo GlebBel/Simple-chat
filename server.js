@@ -14,6 +14,11 @@ const app = express();
 mongoose.connect(process.env.DB_URL, ()=>console.log('m'))
 
 app.use(cookieParser());
+app.use(session({
+    secret: 'secret',
+    saveUninitialized: false,
+    resave: false
+}));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -37,12 +42,6 @@ app.use(expressValidator({
 
 
 app.use('/public', express.static('public'));
-
-app.use(session({
-    secret: 'secret',
-    saveUninitialized: false,
-    resave: false
-}));
 
 app.use(passport.initialize());
 app.use(passport.session());
