@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Link, Route} from 'react-router-dom';
-import InfoField from '../../components/InfoField/InfoField.jsx'
+import InfoField from '../../components/InfoField/InfoField.jsx';
+import ProfPhoto from '../../components/ProfPhoto/ProfPhoto.jsx';
 import axios from 'axios';
 
 export default class Profile extends Component{
@@ -14,13 +15,12 @@ export default class Profile extends Component{
 	componentWillMount(){
 		const url='http://localhost:5000/api/userInfo/' + this.props.match.params.username;
 		this.setState({url:url});
-		console.log(this.props, 'hello')
+		console.log(1,this.props, url)
 		if(this.props.match.params.username){
-			axios.get('http://localhost:5000/api/userInfo/' + this.props.match.params.username)
+			axios.get(url)
 			.then((res) => {
-				console.log(res.data)
-				this.setState({user: res.data})
-				console.log(this.state)
+				console.log(2, res.data);
+				this.setState({user: res.data});
 		})
 		}
 		else if(this.props.isAuthenticated){
@@ -35,7 +35,7 @@ export default class Profile extends Component{
 	render(){
 		return(
 			<div>
-					hello
+				<ProfPhoto photoUrl={this.state.user.photoUrl}/>
 				<InfoField title='username' info={this.state.user.userName} owner={true} url={this.state.url} contain='userName'/>
 				<InfoField title='about' info={this.state.user.about} owner={true} url={this.state.url} contain='about'/>
 				<InfoField title='status' info={this.state.user.status} owner={true} url={this.state.url} contain='status'/>

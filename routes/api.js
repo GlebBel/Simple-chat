@@ -51,11 +51,12 @@ router.post('/getUserInfo', (req, res) => {
 	User.getUserByUserName(req.body.username, (err, user) => {
 		if(err)return sendRes(res, err);
 		if(!user)return sendRes(res, 'err3');
+		console.log(user)
 		const userInfo = {
 			name: user.userName,
 			about: user.about,
 			status: user.status,
-
+			photoUrl: user.photoUrl,
 		}
 		res.send(userInfo);
 	})
@@ -68,17 +69,19 @@ router.post('/getAuthorizedUserInfo', (req, res) => {
 router.route('/userInfo/:username')
 	.get((req, res, next) => {
 		User.getUserByUserName(req.params.username, (err, user) => {
-		if(err)return sendRes(res, err);
-		if(!user)return sendRes(res, 'err5');
-		const userInfo = {
-			userName: user.userName,
-			about: user.about,
-			status: user.status,
+			if(err)return sendRes(res, err);
+			if(!user)return sendRes(res, 'err5');
+			console.log(user)
+			const userInfo = {
+				userName: user.userName,
+				about: user.about,
+				status: user.status,
+				photoUrl: user.photoUrl,
+			}
+			res.send(userInfo);
+		})
+	})
 
-		}
-		res.send(userInfo);
-	})
-	})
 router.route('/userInfo/:username/:param')
 	.post((req, res, next) => {
 		if(!req.user)return sendRes(res, 'err6');
@@ -93,6 +96,10 @@ router.route('/userInfo/:username/:param')
 			})
 		})
 	})
+router.post('/setPhoto', (req, res)=>{
+	console.log(req.body);
+})
+
 
 const sendRes = (res , err, data) =>{
 	if(err) res.send({err: err})

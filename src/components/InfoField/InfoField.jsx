@@ -11,7 +11,6 @@ export default class InfoField extends Component{
 		}
 	}
 	componentWillReceiveProps(nextProps) {
-		console.log('comp', nextProps.info)
 	    this.setState({
 		    info: nextProps.info
 	    });
@@ -28,6 +27,9 @@ export default class InfoField extends Component{
 								id='info'
 						/>
 						<button onClick={this.handleSend.bind(this)}>Send</button>
+						<input  type='file'
+								id='file'
+						/>
 					</form>
 				: 	<div> 
 						<p>{this.state.info}</p>
@@ -48,7 +50,6 @@ export default class InfoField extends Component{
 			.then((res) => {
 				if(res.data.err) console.log(res.data.err)
 				else{
-					console.log(res,'hi');
 					this.setState({info: res.data})
 				}
 			})
