@@ -9,6 +9,7 @@ const passport = require('./config/passport.js');
 const router = require('./routes/api.js')
 require('dotenv').config()
 
+
 const app = express();
 
 mongoose.connect(process.env.DB_URL, ()=>console.log('m'))
@@ -54,7 +55,6 @@ app.use(passport.session());
 app.use('/api', router)
 
 app.get('*', (req, res) => {
-	console.log('hi');
 	res.sendFile(path.resolve(__dirname, 'public/index.html'))
 });
 
@@ -64,5 +64,4 @@ app.listen(process.env.PORT || 5000, function(err) {
     console.log(err);
     return;
   }
-console.log('1');
 });

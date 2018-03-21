@@ -25,11 +25,10 @@ export default class InfoField extends Component{
 					<form>
 						<input  type='text'
 								id='info'
+								value={this.state.info}
+								onChange={this.handleInfoChange.bind(this)}
 						/>
 						<button onClick={this.handleSend.bind(this)}>Send</button>
-						<input  type='file'
-								id='file'
-						/>
 					</form>
 				: 	<div> 
 						<p>{this.state.info}</p>
@@ -42,6 +41,10 @@ export default class InfoField extends Component{
 
 	handleCustomise(){
 		this.setState({customising: true});
+	}
+
+	handleInfoChange(e){
+		this.setState({info: e.target.value});
 	}
 	handleSend(){
 		const str = this.props.url + '/' + this.props.contain

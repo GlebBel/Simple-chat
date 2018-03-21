@@ -13,11 +13,11 @@ export default class extends Component{
 	render(){
 		return(
 			<div>
-			<Head isAuthenticated={this.props.isAuthenticated} />
+			<Head user={this.props.user} />
 				<Switch>
-					<Route path='/login' component={LogIn}/>
+					<Route path='/login' render={(props) => <LogIn {...props} user={this.props.user}/>}/>
 					<Route path='/signup' component={SignUp}/>
-					<Route path='/profile/:username' render={(props) => <Profile {...props} isAuthenticated={this.props.isAuthenticated}/>}/>
+					<Route exact path='/profile/:username' render={(props) => <Profile {...props} user={this.props.user}/>}/>
 					<Route path='/chat' component={Chat}/>
 				</Switch>
 			</div>

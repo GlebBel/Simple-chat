@@ -2,6 +2,17 @@ const express = require('express');
 const passport = require('../config/passport.js')
 const router = express.Router();
 const User = require('../models/user.js');
+const fs = require('fs');
+//const upload = require('../server.js');
+
+const multer  = require('multer');
+/*const storage = multer.diskStorage({
+      destination: './public/data/',
+      filename: 'ths.jpg'
+});*/
+const upload = multer({ dest: 'upload/'});
+
+//const formidable = require('formidable');
 
 router.route('/userExist')
 	.post((req,res) => {
@@ -11,6 +22,8 @@ router.route('/userExist')
 			else res.send({exist:false});
 		})
 })
+
+
 
 router.route('/newUser')
 	.post((req, res) => {
@@ -37,13 +50,23 @@ router.post('/login', (req, res, next) => {
     if (err) { return res.send({err: err}); }
     if (!user) { return res.send('/login')} 
     else{req.logIn(user, function(err) {
-      return res.send('ok')
-    })};
+      if(err)return sendRes(res, err);
+    })
+    	return res.json({user: user.userName})
+	};
   })(req, res, next);
-});
+})
+
+router.get('/logout', (req, res) => {
+	req.logout();
+	console.log('logout')
+	res.json({user: null});
+})
 
 router.get('/authenticated', (req, res) => {
-	res.send(req.isAuthenticated());
+	console.log('hello',req.user)
+	if(req.user) res.json({user: req.user.userName});
+	else res.json({user: null})
 })
 
 router.post('/getUserInfo', (req, res) => {
@@ -58,7 +81,7 @@ router.post('/getUserInfo', (req, res) => {
 			status: user.status,
 			photoUrl: user.photoUrl,
 		}
-		res.send(userInfo);
+		res.json(userInfo);
 	})
 })
 router.post('/getAuthorizedUserInfo', (req, res) => {
@@ -96,10 +119,41 @@ router.route('/userInfo/:username/:param')
 			})
 		})
 	})
-router.post('/setPhoto', (req, res)=>{
-	console.log(req.body);
-})
 
+
+router.post('/setPhoto', upload.single('photo'), (req, res)=>{
+	console.log('photo');
+	console.log(req.body);
+	console.log(req.file);
+	if(!req.user) return sendRes(res, 'err');
+	const dirPath = '/public/data/usersPhotos/' + req.user._id;
+	const photoPath =  dirPath + '/' + new Date + '.jpg';
+	if(fs.existsSync('.'+dirPath)){
+		fs.unlink('.'+req.user.photoUrl, (err) => {
+			if(err) return sendRes(res, err);
+			fs.rename(req.file.path, '.' + dirPath + '/' + new Date + '.jpg', (err) => {
+				console.log(req.file.path, '.' + dirPath + '/up.jpg')
+				if(err) return sendRes(res, err)
+				else User.changeUserInfo(req.user.id, 'photoUrl', photoPath, (err) =>{
+					if(err) return sendRes(res, err);
+					sendRes(res, null, photoPath);
+				})
+			})
+		})
+	}
+	else{
+		fs.mkdir('.' + dirPath, (err) => {
+			if(err) sendRes(res, err);
+			fs.rename(req.file.path, '.' + dirPath + '/' + new Date + '.jpg',(err) => {
+				if(err) return sendRes(res, err);
+				else User.changeUserInfo(req.user.id, 'photoUrl', photoPath , (err) =>{
+					if(err) return sendRes(res, err);
+					return sendRes(res, null, photoPath);
+				})
+			})
+		})
+	}
+})
 
 const sendRes = (res , err, data) =>{
 	if(err) res.send({err: err})

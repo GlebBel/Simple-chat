@@ -7,14 +7,16 @@ export default class LogIn extends Component{
 	constructor(props){
 		super(props);
 		this.state = {
-			isAuthenticated: '',
+			user: JSON.parse(localStorage.getItem('user')),
 			redirect: false,
 			username: '',
 		}
 	}
 	componentWillMount(){
-		axios.get('http://localhost:5000/api/authenticated')
-			.then((res) => console.log(res.data.user))
+		/*console.log(this.props.user)
+		if(this.props.user){
+			this.setState({user: this.props.user, redirect: true});
+		}*/
 	}
 
 	render(){
@@ -33,7 +35,7 @@ export default class LogIn extends Component{
 									value='Post'/>
 				</form>
 				<Link to='/signup'>Forgot a password?</Link>
-				{this.state.redirect ? <Redirect to={'/profile/' + document.getElementById('userName').value}/> : null})
+				{this.state.redirect ? <Redirect to={'/profile/' + this.state.user}/> : null})
 			</div>
 		)
 	}
@@ -44,7 +46,10 @@ export default class LogIn extends Component{
 		axios.post('http://localhost:5000/api/login', this.getFildsValue())
 			.then((res) => {
 				console.log(res)
-				if(res.data === 'ok') this.setState({redirect:true})
+				if(!res.data.err && res.data.user) {
+					localStorage.setItem('user', JSON.stringify(res.data.user))
+					this.setState({user:res.data.user, redirect:true});
+				}
 			})
 		console.log('hi');
 
