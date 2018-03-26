@@ -3,6 +3,7 @@ const passport = require('../config/passport.js')
 const router = express.Router();
 const User = require('../models/user.js');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 //const upload = require('../server.js');
 
 const multer  = require('multer');
@@ -63,10 +64,32 @@ router.get('/logout', (req, res) => {
 	res.json({user: null});
 })
 
-router.get('/authenticated', (req, res) => {
-	console.log('hello',req.user)
-	if(req.user) res.json({user: req.user.userName});
-	else res.json({user: null})
+router.post('/jwt', (req, res, next) => {
+	
+	  User.getUserByUserName(req.body.username, (err, user) => {
+	      if (err) {
+	        return res.send(err);
+	      }
+	      if (user){console.log(user.password, req.body.password)
+	      User.comparePasswords(req.body.password, user.password, function(err, isMatch){
+		    if (isMatch) {
+		    	console.log(user)
+		    	const payload = user
+		        const token = jwt.sign(JSON.stringify(user), 'key');
+		        res.json({message: "ok", token: token});
+		    } else {
+		        res.send('err');
+		    }
+	    })}else{res.send("No User")}
+	})
+})
+
+
+router.get('/authenticated',passport.authenticate('jwt',{session:false}) , 	(req, res) => {
+	// console.log('hello',req.user)
+	// if(req.user) res.json({user: req.user.userName});
+	// else res.json({user: null})
+	res.send(req.user)
 })
 
 router.post('/getUserInfo', (req, res) => {
