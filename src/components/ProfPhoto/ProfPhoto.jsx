@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Link, Route} from 'react-router-dom';
 import axios from 'axios';
+import jwt from 'jsonwebtoken'
 
 
 export default class Profile extends Component{
@@ -13,7 +14,6 @@ export default class Profile extends Component{
 	}
 
 	componentDidMount(){
-		console.log(this.props.owner,'props')
 		if(document.getElementById("input")){
 			document.getElementById("input").addEventListener("change", this.handleChangePhoto.bind(document.getElementById("input"), this.setState), false);
 		}
@@ -22,11 +22,9 @@ export default class Profile extends Component{
 		this.setState({
 		    photoUrl: nextProps.photoUrl,
 	    });
-	    console.log(123, nextProps.photoUrl)
 	}
 
 	render(){
-		console.log(this.state.photoUrl)
 		return(
 			<div>
 				<img src={this.state.photoUrl}/>
@@ -36,7 +34,6 @@ export default class Profile extends Component{
 	}
 
 	handleChangePhoto(fn){
-		console.log('hi1',this)
 		let formData = new FormData();
 		let fileList = this.files
 		formData.append('photo', fileList[0]);
@@ -44,13 +41,14 @@ export default class Profile extends Component{
         	method: 'POST',               
 	        processData: false, // important
 	        contentType: false, // important
+	        headers:{'Authorization': 'Bearer ' + localStorage.getItem('jwt')},
 	        data: formData,
 	        url: 'http://localhost:5000/api/setPhoto',
 	        dataType : 'json', 
     	}) 
 			.then((res)=>{
-				console.log('hi2',res.data)
-				if(!res.data.err) fn({photoUrl: res.data})
+				localStorage.setItem('jwt', res.data)
+				if(!res.data.err) fn({photoUrl: jwt.decode(res.data).photoUrl})
 			});
 	}
 }

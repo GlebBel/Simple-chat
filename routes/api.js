@@ -5,15 +5,22 @@ const User = require('../models/user.js');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 //const upload = require('../server.js');
-
+const io = require('../server.js');
+const chat = require('./chat.js')
 const multer  = require('multer');
-/*const storage = multer.diskStorage({
-      destination: './public/data/',
-      filename: 'ths.jpg'
-});*/
 const upload = multer({ dest: 'upload/'});
 
-//const formidable = require('formidable');
+
+router.use('*', (req,res,next) =>{
+
+	passport.authenticate('jwt', function (err, user){
+		if(user){
+			req.user = user;
+		}
+		console.log(req.user)
+		next()
+	})(req, res, next) 
+});
 
 router.route('/userExist')
 	.post((req,res) => {
@@ -23,8 +30,6 @@ router.route('/userExist')
 			else res.send({exist:false});
 		})
 })
-
-
 
 router.route('/newUser')
 	.post((req, res) => {
@@ -45,38 +50,31 @@ router.route('/newUser')
 	});
 
 
-router.post('/login', (req, res, next) => {
-  console.log('auth', req.isAuthenticated());
-  passport.authenticate('local', function(err, user, info) {
-    if (err) { return res.send({err: err}); }
-    if (!user) { return res.send('/login')} 
-    else{req.logIn(user, function(err) {
-      if(err)return sendRes(res, err);
-    })
-    	return res.json({user: user.userName})
-	};
-  })(req, res, next);
-})
 
 router.get('/logout', (req, res) => {
-	req.logout();
-	console.log('logout')
-	res.json({user: null});
+	jwt.verify(req.get('authorization').slice(7), 'key', (err, data) => {
+		if(err) return sendRes(res, err);
+		chat.closeConnection(io.io, data.socketId);
+		sendRes(res, null, 'ok');
+	});
+	//chat.closeConnection(io,)
 })
 
 router.post('/jwt', (req, res, next) => {
-	
-	  User.getUserByUserName(req.body.username, (err, user) => {
+	console.log(req.body.userName)
+	  User.getUserByUserName(req.body.userName, (err, user) => {
+
 	      if (err) {
 	        return res.send(err);
 	      }
 	      if (user){console.log(user.password, req.body.password)
 	      User.comparePasswords(req.body.password, user.password, function(err, isMatch){
 		    if (isMatch) {
-		    	console.log(user)
-		    	const payload = user
-		        const token = jwt.sign(JSON.stringify(user), 'key');
-		        res.json({message: "ok", token: token});
+		    	const clone = {randInfo: new Date()}; 
+				Object.assign(clone, user._doc);
+				console.log(clone, clone.randInfo);
+		        const token = jwt.sign(JSON.stringify(clone), 'key');
+		        res.json({message: "ok", token: token, user: user.userName});
 		    } else {
 		        res.send('err');
 		    }
@@ -85,10 +83,11 @@ router.post('/jwt', (req, res, next) => {
 })
 
 
-router.get('/authenticated',passport.authenticate('jwt',{session:false}) , 	(req, res) => {
+router.get('/authenticated',(req, res) => {
 	// console.log('hello',req.user)
 	// if(req.user) res.json({user: req.user.userName});
 	// else res.json({user: null})
+	console.log('hello', req.user)
 	res.send(req.user)
 })
 
@@ -108,12 +107,12 @@ router.post('/getUserInfo', (req, res) => {
 	})
 })
 router.post('/getAuthorizedUserInfo', (req, res) => {
-	if(req.isAuthenticated()) res.send('err4')
-	else res.send({name: req.user.userName, pass: req.user.password});
+	res.send({name: req.user});
 })
 
 router.route('/userInfo/:username')
 	.get((req, res, next) => {
+		console.log('UI')
 		User.getUserByUserName(req.params.username, (err, user) => {
 			if(err)return sendRes(res, err);
 			if(!user)return sendRes(res, 'err5');
@@ -128,20 +127,24 @@ router.route('/userInfo/:username')
 		})
 	})
 
-router.route('/userInfo/:username/:param')
-	.post((req, res, next) => {
+router.post('/userInfo/:username/:param', (req, res, next) => {
+		console.log('---', req.body)
 		if(!req.user)return sendRes(res, 'err6');
 		User.getUserByUserName(req.params.username, (err, user) => {
 			if(err) return sendRes(res, err);
 			if(!user)return sendRes(res, 'err7');
 			if(user.userName !== req.user.userName )return sendRes(res, 'err8');
 			if(!(req.params.param in user) && user.userName === 'password', user.userName === 'data')return sendRes(res, 'err9');
-			User.changeUserInfo(req.user.id, req.params.param, req.body.data, (err, user, color) => {
+			User.changeUserInfo(req.user.id, req.params.param, req.body.info, (err, user, color) => {
 				if(err)return sendRes(res, err);
+				user[req.params.param] = req.body.info;
+				jwt.sign(JSON.stringify(user), 'key')
 				res.send(user[req.params.param]);
 			})
 		})
-	})
+	}
+)
+
 
 
 router.post('/setPhoto', upload.single('photo'), (req, res)=>{
@@ -159,7 +162,8 @@ router.post('/setPhoto', upload.single('photo'), (req, res)=>{
 				if(err) return sendRes(res, err)
 				else User.changeUserInfo(req.user.id, 'photoUrl', photoPath, (err) =>{
 					if(err) return sendRes(res, err);
-					sendRes(res, null, photoPath);
+					req.user.photoUrl = photoPath;
+					return sendRes(res, null, jwt.sign(JSON.stringify(req.user), 'key'));
 				})
 			})
 		})
@@ -171,7 +175,8 @@ router.post('/setPhoto', upload.single('photo'), (req, res)=>{
 				if(err) return sendRes(res, err);
 				else User.changeUserInfo(req.user.id, 'photoUrl', photoPath , (err) =>{
 					if(err) return sendRes(res, err);
-					return sendRes(res, null, photoPath);
+					req.user.photoUrl = photoPath;
+					return sendRes(res, null, jwt.sign(JSON.stringify(req.user), 'key'));
 				})
 			})
 		})

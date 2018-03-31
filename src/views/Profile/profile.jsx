@@ -3,13 +3,14 @@ import {Link, Route} from 'react-router-dom';
 import InfoField from '../../components/InfoField/InfoField.jsx';
 import ProfPhoto from '../../components/ProfPhoto/ProfPhoto.jsx';
 import axios from 'axios';
+import jwt from 'jsonwebtoken'
 
 export default class Profile extends Component{
 	constructor(props){
 		super(props);
 		this.state = {
-			user: JSON.parse(localStorage.getItem('user')),
-			username:JSON.parse(localStorage.getItem('user')),
+			user: {},
+			username: jwt.decode(localStorage.getItem('jwt')).userName,
 			redirect:'', 
 			url:'',
 			owner: false,

@@ -18,17 +18,17 @@ export default class App extends Component{
 		if(localStorage.getItem('user')) {
 			if(JSON.parse(localStorage.getItem('user')) !== null) this.setState({user: JSON.parse(localStorage.getItem('user'))})
 		}
-		else{
-			xhr.open('GET', 'http://localhost:5000/api/authenticated', false);
-			xhr.send();
-			if (xhr.status != 200) {
-		        // обработать ошибку
-		        alert('Ошибка ' + xhr.status + ': ' + xhr.statusText);
-		    }
-			const res = JSON.parse(xhr.response);
-			this.setState({user: res.user});
-			localStorage.setItem('user', JSON.stringify(res.user));
-		}
+		// else{
+		// 	xhr.open('GET', 'http://localhost:5000/api/authenticated', false);
+		// 	xhr.send();
+		// 	if (xhr.status != 200) {
+		//         // обработать ошибку
+		//         alert('Ошибка ' + xhr.status + ': ' + xhr.statusText);
+		//     }
+		// 	const res = JSON.parse(xhr.response);
+		// 	this.setState({user: res.user});
+		// 	localStorage.setItem('user', JSON.stringify(res.user));
+		// }
 	}
 	render(){
 		console.log(this.state.user,'hi');

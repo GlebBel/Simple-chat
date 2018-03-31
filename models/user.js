@@ -10,14 +10,14 @@ const userSchema = mongoose.Schema({
 	photoUrl:String,
 })
 
-userSchema.options.toJSON={
-	transform: function(doc,ret,options){
-		delete ret.password
-		delete ret.created
-		delete ret.__v
-		delete ret._id
-	}
-}
+// userSchema.options.toJSON={
+// 	transform: function(doc,ret,options){
+// 		delete ret.password
+// 		delete ret.created
+// 		delete ret.__v
+// 		delete ret._id
+// 	}
+// }
 const User = module.exports = mongoose.model('user',userSchema);
 
 module.exports.createUser = (newUser, callback) => {

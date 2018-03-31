@@ -47,9 +47,12 @@ export default class InfoField extends Component{
 		this.setState({info: e.target.value});
 	}
 	handleSend(){
-		const str = this.props.url + '/' + this.props.contain
-		axios.post(str, {data:
-			document.getElementById('info').value})
+		const str = this.props.url + '/' + this.props.contain;
+		axios({
+			method: 'post',
+			url: str,
+			headers:{'Authorization': 'Bearer ' + localStorage.getItem('jwt')},
+			data: {info: document.getElementById('info').value}})
 			.then((res) => {
 				if(res.data.err) console.log(res.data.err)
 				else{

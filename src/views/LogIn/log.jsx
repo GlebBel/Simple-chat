@@ -43,11 +43,11 @@ export default class LogIn extends Component{
 	handleSubmit(e){
 		e.preventDefault();
 		console.log(this.getFildsValue())
-		axios.post('http://localhost:5000/api/login', this.getFildsValue())
+		axios.post('http://localhost:5000/api/jwt', this.getFildsValue())
 			.then((res) => {
 				console.log(res)
 				if(!res.data.err && res.data.user) {
-					localStorage.setItem('user', JSON.stringify(res.data.user))
+					localStorage.setItem('jwt', res.data.token)
 					this.setState({user:res.data.user, redirect:true});
 				}
 			})

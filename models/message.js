@@ -7,10 +7,13 @@ const messSchema = mongoose.Schema({
 	date: Date,
 });
 
-module.exports = mongoose.model('message',messSchema);
+const Mass = module.exports = mongoose.model('message', messSchema);
 
-module.exports.addMass = (newMess, callback)=>{
+module.exports.addMess = (newMess, callback) => {
 	newMess.date = new Date(),
 	newMess.save(callback)
+}
+module.exports.getMessList = (callback) => {
+	Mass.find({}, callback);
 }
 

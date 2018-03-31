@@ -7,9 +7,10 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const passport = require('./config/passport.js');
 const router = require('./routes/api.js');
-const chat = require('./routes/chat.js'); // ключ для подписи JWT
-//const jwt = require('jsonwebtoken'); // аутентификация по JWT для hhtp
+const chat = require('./routes/chat.js');
 const socketioJwt = require('socketio-jwt'); // аутентификация по JWT для socket.io
+
+
 
 require('dotenv').config()
 
@@ -21,9 +22,6 @@ const io = require('socket.io')(server);
 
 
 mongoose.connect(process.env.DB_URL, ()=>console.log('Connect to MongoDb'))
-// mongoose.connection.on("connect", ()=>{console.log('Connect to MongoDb')})
-// console.log(mongoose.connection)
-
 const MongoStore = require("connect-mongo")(session);
 
 app.use(cookieParser());
@@ -40,28 +38,23 @@ app.use(bodyParser.json());
 
 app.use('/public', express.static('public'));
 
-app.use(passport.initialize());
-app.use(passport.session());
+let connections = new Map;
+
+const addConnection = (map, socket, id) => {
+  map.set(id, socket);
+}
+
+const closeConnection = (io, id) => {
+  io.sockets.connected[id].disconnect()
+}
 
 io.on('connection', socketioJwt.authorize({
     secret: 'key',
     timeout: 15000
   })
-).on('authenticated', function (socket) {
-  
-  console.log('Это мое имя из токена: ' + socket.decoded_token.userName);
-  
-  socket.on("clientEvent", (data) => {
-    console.log(data);
-  })
-});
+).on('authenticated', chat.func);
 
-// app.use((req,res,next) => {
-//   if(!req.isAuthenticated()) next();
-//   io.on('connection', chat.bind(this, req));
-//   console.log('here')
-//   next();
-// })
+
 
 app.use('/api', router)
 
@@ -76,3 +69,4 @@ server.listen(process.env.PORT || 5000, function(err) {
     return;
   }
 });
+module.exports.io = io;

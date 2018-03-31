@@ -4,15 +4,16 @@ class Comment extends Component {
 	constructor(props){
 		super(props);
 	}
- 	rawMarkup(){
-		let rawMarkup = marked(this.props.children.toString());
-		return { __html: rawMarkup };
-		}
+ 	// rawMarkup(){
+		// let rawMarkup = marked(this.props.children.toString());
+		// return { __html: rawMarkup };
+		// }
 	render() {
 		return (
 			<div>
+				<img src={this.props.photoUrl} width="30" height="50"/>
 				<h3>{this.props.author}</h3>
-				<span dangerouslySetInnerHTML={ this.rawMarkup() } />
+				<div>{this.props.text}</div>
 			</div>
 		)
 	}

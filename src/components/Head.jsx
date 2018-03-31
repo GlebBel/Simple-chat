@@ -19,7 +19,7 @@ export default class Head extends Component{
 
 					<Route path='/signup' render={() => <li><Link to='/login'>Log in</Link></li>}/>
 					{this.state.user ?
-						<Route path='/profile' render={() => <li><Link to ='/login' onClick={this.handleLogOut}>Log out</Link></li>}/>
+						<Route path='/profile' render={() => <button onClick={this.handleLogOut}>Log out</button>}/>
 						:
 						null
 					}
@@ -28,10 +28,12 @@ export default class Head extends Component{
 		)
 	}
 	handleLogOut(){
-		localStorage.setItem('user', null)
-		axios.get('http://localhost:5000/api/logout')
-			.then((res) =>{
-				localStorage.setItem('user', JSON.stringify(res.data.user))
+		axios({
+			method: 'get',
+			url: 'http://localhost:5000/api/logout',
+			headers:{'Authorization': 'Bearer ' + JSON.parse(localStorage.getItem('jwt'))}}
+			).then((res) => {
+				console.log('ok');
 			})
 	}
 }
